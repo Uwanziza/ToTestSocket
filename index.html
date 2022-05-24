@@ -1,0 +1,46 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://192.168.1.50:3004/socket.io/socket.io.js"></script>
+<script>
+$(document).ready(function(){
+    // Connect to our msg/websockets server
+    var socket = io.connect('http://192.168.1.50:3004');
+ 
+    // Initial set of objects, loop through and add to list
+    socket.on('initial msgs', function(data){
+        var html = ''
+        for (var i = 0; i < data.length; i++){
+            // We store html as a var then add to DOM after for efficiency
+            html += '<li>' + data[i].content + '</li>'
+        }
+        $('#msgs').html(html)
+    })
+ 
+    // New mesg emitted, add it to our list of current notes
+    socket.on('new msg', function(data){
+        $('#msgs').append('<li>' + data.content+ '</li>')
+    })
+      
+    // New socket connected, display new count on page
+    socket.on('users connected', function(data){
+        $('#usersConnected').html('Users connected: ' + data)
+    })
+ 
+    socket.on('users disconnected', function(data){
+        $('#usersDisconnected').html('Users disconnected: ' + data)
+    })
+
+     //Add a new (random) msg, emit to server to let others know
+    $('#newMsg').click(function(){
+        var newNote = 'This is a random ' + (Math.floor(Math.random() * 100) + 1)  + ' message'
+        socket.emit('new msg', {content: newNote})
+    })
+
+
+    
+
+})
+</script>
+<ul id="msgs"></ul>
+<div id="usersConnected"></div>
+<div id="usersDisconnected"></div>
+<div id="newMsg">Create message</div>
